@@ -1,0 +1,93 @@
+-- Criação do banco de dados
+CREATE DATABASE cooperativa;
+
+-- Conexão ao banco de dados
+\c cooperativa;
+
+-- Tabela Agricultores
+CREATE TABLE agricultor (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    cpf_cnpj VARCHAR(20) UNIQUE NOT NULL,
+    endereco VARCHAR(255) NOT NULL,
+    telefone VARCHAR(15) NOT NULL
+);
+
+-- Tabela Propriedades
+CREATE TABLE propriedade (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    localizacao VARCHAR(255) NOT NULL,
+    tamanho_ha NUMERIC(10, 2) NOT NULL,
+    id_agricultor INT NOT NULL REFERENCES agricultor(id) ON DELETE CASCADE
+);
+
+-- Tabela Produtos Agrícolas
+CREATE TABLE produto_agricola (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    tipo VARCHAR(50) NOT NULL,
+    preco NUMERIC(10, 2) NOT NULL,
+    id_propriedade INT NOT NULL REFERENCES propriedade(id) ON DELETE CASCADE
+);
+
+-- Tabela Clientes
+CREATE TABLE cliente (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    cpf_cnpj VARCHAR(20) UNIQUE NOT NULL,
+    endereco VARCHAR(255) NOT NULL,
+    telefone VARCHAR(15) NOT NULL
+);
+
+-- Tabela Vendas
+CREATE TABLE venda (
+    id SERIAL PRIMARY KEY,
+    data DATE NOT NULL DEFAULT CURRENT_DATE,
+    valor_total NUMERIC(10, 2) NOT NULL,
+    id_cliente INT NOT NULL REFERENCES cliente(id) ON DELETE CASCADE
+);
+
+-- Tabela Venda_Produto (Relação N:M entre Vendas e Produtos)
+CREATE TABLE venda_produto (
+    id SERIAL PRIMARY KEY,
+    id_venda INT NOT NULL REFERENCES venda(id) ON DELETE CASCADE,
+    id_produto INT NOT NULL REFERENCES produto_agricola(id) ON DELETE CASCADE,
+    quantidade NUMERIC(10, 2) NOT NULL,
+    preco NUMERIC(10, 2) NOT NULL
+);
+
+-- Tabela Fornecedores
+CREATE TABLE fornecedor (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    produto_fornecido VARCHAR(100) NOT NULL,
+    cnpj VARCHAR(20) UNIQUE NOT NULL,
+    telefone VARCHAR(15) NOT NULL
+);
+
+-- Inserção de Dados Exemplares
+INSERT INTO agricultor (nome, cpf_cnpj, endereco, telefone) 
+VALUES 
+    ('João da Silva', '12345678901', 'Fazenda A, Zona Rural', '(77) 99999-1234'),
+    ('Maria Oliveira', '98765432101', 'Fazenda B, Centro', '(77) 98888-5678');
+
+INSERT INTO propriedade (nome, localizacao, tamanho_ha, id_agricultor) 
+VALUES 
+    ('Sítio Alegre', 'Região Norte', 15.5, 1),
+    ('Fazenda Boa Vista', 'Região Sul', 30.0, 2);
+
+INSERT INTO produto_agricola (nome, tipo, preco, id_propriedade) 
+VALUES 
+    ('Milho', 'Grão', 20.0, 1),
+    ('Soja', 'Grão', 35.0, 2);
+
+INSERT INTO cliente (nome, cpf_cnpj, endereco, telefone) 
+VALUES 
+    ('Carlos Lima', '12312312312', 'Rua Principal, 123', '(77) 91111-1111'),
+    ('Ana Paula', '32132132132', 'Rua Secundária, 456', '(77) 92222-2222');
+
+INSERT INTO fornecedor (nome, produto_fornecido, cnpj, telefone) 
+VALUES 
+    ('Insumos Agrícolas LTDA', 'Adubo', '11223344556677', '(77) 93333-3333'),
+    ('Máquinas Rurais S.A.', 'Tratores', '22334455667788', '(77) 94444-4444');
