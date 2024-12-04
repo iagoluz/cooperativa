@@ -1,4 +1,4 @@
-package model;
+package cooperativa.model;
 public class Agricultor {
     private int id;
     private String nome;

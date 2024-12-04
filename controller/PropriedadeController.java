@@ -1,7 +1,7 @@
-package controller;
+package cooperativa.controller;
 
-import dao.PropriedadeDAO;
-import model.Propriedade;
+import cooperativa.dao.PropriedadeDAO;
+import cooperativa.model.Propriedade;
 
 import java.sql.SQLException;
 import java.util.List;

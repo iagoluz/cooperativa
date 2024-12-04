@@ -1,13 +1,17 @@
-package view;
+package cooperativa.view;
 
-import controller.AgricultorController;
-import controller.ClienteController;
-import controller.FornecedorController;
-import controller.ProdutoAgricolaController;
-import controller.PropriedadeController;
-import controller.VendaController;
-import model.Propriedade;
-import model.Venda;
+import cooperativa.controller.AgricultorController;
+import cooperativa.controller.ClienteController;
+import cooperativa.controller.FornecedorController;
+import cooperativa.controller.ProdutoAgricolaController;
+import cooperativa.controller.PropriedadeController;
+import cooperativa.controller.VendaController;
+import cooperativa.controller.VendaController;
+import cooperativa.controller.VendaProdutoController;
+import cooperativa.model.VendaProduto;
+import cooperativa.model.Propriedade;
+import cooperativa.model.Venda;
+import cooperativa.util.RelatoriosUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,12 +19,16 @@ import java.awt.event.ActionEvent;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
-import model.Agricultor;
-import model.Cliente;
-import model.Fornecedor;
-import model.ProdutoAgricola;
-import util.RelatoriosUtil;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.table.DefaultTableModel;
+import cooperativa.model.Agricultor;
+import cooperativa.model.Cliente;
+import cooperativa.model.Fornecedor;
+import cooperativa.model.ProdutoAgricola;
+
 
 public class MainFrame extends JFrame {
     private CardLayout cardLayout;
@@ -51,7 +59,8 @@ public class MainFrame extends JFrame {
 
         // Menu de navegação
         JPanel menuPanel = new JPanel(new FlowLayout());
-
+        menuPanel.setBackground(new Color(173, 216, 230));
+        
         JButton produtoButton = new JButton("Produtos Agrícolas");
         JButton propriedadesButton = new JButton("Gerenciar Propriedades");
         JButton vendasButton = new JButton("Gerenciar Vendas");
@@ -86,68 +95,79 @@ public class MainFrame extends JFrame {
         new MainFrame();
     }
 
-    // Painel para Relatórios
-    class RelatorioPanel extends JPanel {
-        public RelatorioPanel() {
-            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-            setBackground(new Color(173, 216, 230));
-            
-            JLabel titulo = new JLabel("Relatórios", SwingConstants.CENTER);
-            titulo.setFont(new Font("Arial", Font.BOLD, 24));
+   // Painel para Relatórios
+class RelatorioPanel extends JPanel {
+    public RelatorioPanel() {
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setBackground(new Color(173, 216, 230));
+        
+        JLabel titulo = new JLabel("Relatórios", SwingConstants.CENTER);
+        titulo.setFont(new Font("Arial", Font.BOLD, 24));
 
-            JButton vendasRelatorioButton = new JButton("Relatório de Vendas por Cliente");
-            JButton propriedadesRelatorioButton = new JButton("Relatório de Propriedades");
-            JButton produtosRelatorioButton = new JButton("Relatório de Produtos Agrícolas");
+        // Botões para os relatórios
+        JButton vendasRelatorioButton = new JButton("Relatório de Vendas por Cliente");
+        JButton propriedadesRelatorioButton = new JButton("Relatório de Propriedades");
+        JButton produtosRelatorioButton = new JButton("Relatório de Produtos Agrícolas");
+        JButton vendasDetalhadasRelatorioButton = new JButton("Relatório Detalhado de Vendas");
+        JButton estoqueProdutosRelatorioButton = new JButton("Relatório de Estoque");
 
-            add(titulo);
-            add(Box.createRigidArea(new Dimension(0, 20))); // Espaço entre componentes
-            add(vendasRelatorioButton);
-            add(propriedadesRelatorioButton);
-            add(produtosRelatorioButton);
+        // Adicionando os botões ao painel
+        add(titulo);
+        add(Box.createRigidArea(new Dimension(0, 20))); // Espaço entre componentes
+        add(vendasRelatorioButton);
+        add(propriedadesRelatorioButton);
+        add(produtosRelatorioButton);
+        add(vendasDetalhadasRelatorioButton);
+        add(estoqueProdutosRelatorioButton);
 
-            // Ação para Relatório de Vendas
-            vendasRelatorioButton.addActionListener(e -> {
-                try {
-                    gerarRelatorioVendas();
-                } catch (SQLException ex) {
-                    JOptionPane.showMessageDialog(this, "Erro ao gerar relatório: " + ex.getMessage());
-                }
-            });
+        // Ações para os relatórios
+        vendasRelatorioButton.addActionListener(e -> {
+            try {
+                String relatorio = RelatoriosUtil.gerarRelatorioVendasPorCliente();
+                JOptionPane.showMessageDialog(this, relatorio);
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao gerar relatório de vendas por cliente: " + ex.getMessage());
+            }
+        });
 
-            // Ação para Relatório de Propriedades
-            propriedadesRelatorioButton.addActionListener(e -> {
-                try {
-                    gerarRelatorioPropriedades();
-                } catch (SQLException ex) {
-                    JOptionPane.showMessageDialog(this, "Erro ao gerar relatório: " + ex.getMessage());
-                }
-            });
+        propriedadesRelatorioButton.addActionListener(e -> {
+            try {
+                String relatorio = RelatoriosUtil.gerarRelatorioPropriedades();
+                JOptionPane.showMessageDialog(this, relatorio);
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao gerar relatório de propriedades: " + ex.getMessage());
+            }
+        });
 
-            // Ação para Relatório de Produtos Agrícolas
-            produtosRelatorioButton.addActionListener(e -> {
-                try {
-                    gerarRelatorioProdutosAgricolas();
-                } catch (SQLException ex) {
-                    JOptionPane.showMessageDialog(this, "Erro ao gerar relatório: " + ex.getMessage());
-                }
-            });
-        }
+        produtosRelatorioButton.addActionListener(e -> {
+            try {
+                String relatorio = RelatoriosUtil.gerarRelatorioProdutosAgricolas();
+                JOptionPane.showMessageDialog(this, relatorio);
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao gerar relatório de produtos agrícolas: " + ex.getMessage());
+            }
+        });
 
-        private void gerarRelatorioVendas() throws SQLException {
-            String relatorio = RelatoriosUtil.gerarRelatorioVendasPorCliente(); // Método a ser implementado
-            JOptionPane.showMessageDialog(this, relatorio);
-        }
+        vendasDetalhadasRelatorioButton.addActionListener(e -> {
+            try {
+                String relatorio = RelatoriosUtil.gerarRelatorioVendasDetalhado();
+                JOptionPane.showMessageDialog(this, relatorio);
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao gerar relatório detalhado de vendas: " + ex.getMessage());
+            }
+        });
 
-        private void gerarRelatorioPropriedades() throws SQLException {
-            String relatorio = RelatoriosUtil.gerarRelatorioPropriedades(); // Método a ser implementado
-            JOptionPane.showMessageDialog(this, relatorio);
-        }
-
-        private void gerarRelatorioProdutosAgricolas() throws SQLException {
-            String relatorio = RelatoriosUtil.gerarRelatorioProdutosAgricolas(); // Método a ser implementado
-            JOptionPane.showMessageDialog(this, relatorio);
-        }
+        estoqueProdutosRelatorioButton.addActionListener(e -> {
+            try {
+                String relatorio = RelatoriosUtil.gerarRelatorioEstoqueProdutos();
+                JOptionPane.showMessageDialog(this, relatorio);
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao gerar relatório de estoque: " + ex.getMessage());
+            }
+        });
     }
+}
+ 
 }
 
 
@@ -249,13 +269,23 @@ public class MainFrame extends JFrame {
     }
 
     // Painel para gerenciar vendas
-   class VendaPanel extends JPanel {
+  // Painel para gerenciar vendas
+class VendaPanel extends JPanel {
     private VendaController controller;
+    private VendaProdutoController vendaProdutoController;
+    private JTable produtosTable;
+    private DefaultTableModel tableModel;
 
     public VendaPanel(JFrame parentFrame) {
         this.controller = new VendaController();
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        this.vendaProdutoController = new VendaProdutoController();
+        setLayout(new BorderLayout());
         setBackground(new Color(173, 216, 230));
+        
+        // Painel superior com campos e botões de venda
+        JPanel vendaPanel = new JPanel();
+        vendaPanel.setLayout(new BoxLayout(vendaPanel, BoxLayout.Y_AXIS));
+        vendaPanel.setBackground(new Color(173, 216, 230));
         
         JTextField dataField = new JTextField(20);
         JTextField valorTotalField = new JTextField(20);
@@ -266,44 +296,74 @@ public class MainFrame extends JFrame {
         JButton atualizarButton = new JButton("Atualizar Venda");
         JButton removerButton = new JButton("Remover Venda");
 
-        add(new JLabel("Data (yyyy-MM-dd):"));
-        add(dataField);
-        add(new JLabel("Valor Total:"));
-        add(valorTotalField);
-        add(new JLabel("ID do Cliente:"));
-        add(clienteIdField);
-        add(adicionarButton);
-        add(listarButton);
-        add(atualizarButton);
-        add(removerButton);
+        vendaPanel.add(new JLabel("Data (yyyy-MM-dd):"));
+        vendaPanel.add(dataField);
+        vendaPanel.add(new JLabel("Valor Total:"));
+        vendaPanel.add(valorTotalField);
+        vendaPanel.add(new JLabel("ID do Cliente:"));
+        vendaPanel.add(clienteIdField);
+        vendaPanel.add(adicionarButton);
+        vendaPanel.add(listarButton);
+        vendaPanel.add(atualizarButton);
+        vendaPanel.add(removerButton);
 
-        // Adicionar Venda
+        // Ações para os botões de vendas
         adicionarButton.addActionListener(e -> {
-            try {
-                LocalDate localDate = LocalDate.parse(dataField.getText());
-                Date date = Date.valueOf(localDate);
+    try {
+        // Obtenha e valide a data
+        String dataTexto = dataField.getText().trim();
+        if (dataTexto.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "O campo de data não pode estar vazio.");
+            return;
+        }
+        LocalDate localDate = LocalDate.parse(dataTexto);
+        Date date = Date.valueOf(localDate);
 
-                Venda venda = new Venda(
-                        date,
-                        Double.parseDouble(valorTotalField.getText()),
-                        Integer.parseInt(clienteIdField.getText())
-                );
+        // Obtenha e valide o valor total
+        String valorTotalTexto = valorTotalField.getText().trim();
+        if (valorTotalTexto.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "O campo de valor total não pode estar vazio.");
+            return;
+        }
+        double valorTotal = Double.parseDouble(valorTotalTexto);
 
-                controller.adicionarVenda(venda);
-                JOptionPane.showMessageDialog(parentFrame, "Venda adicionada com sucesso!");
-                dataField.setText("");
-                valorTotalField.setText("");
-                clienteIdField.setText("");
-            } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(parentFrame, "Erro ao adicionar venda: " + ex.getMessage());
-            }
-        });
+        // Obtenha e valide o ID do cliente
+        String clienteIdTexto = clienteIdField.getText().trim();
+        if (clienteIdTexto.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "O campo de ID do cliente não pode estar vazio.");
+            return;
+        }
+        int idCliente = Integer.parseInt(clienteIdTexto);
+        if (idCliente <= 0) {
+            JOptionPane.showMessageDialog(this, "Por favor, insira um ID de cliente válido.");
+            return;
+        }
 
-        // Listar Vendas
+        // Crie a venda com o ID do cliente correto
+        Venda venda = new Venda(date, valorTotal, idCliente);
+        controller.adicionarVenda(venda);
+
+        JOptionPane.showMessageDialog(this, "Venda adicionada com sucesso!");
+
+        // Limpe os campos após adicionar a venda
+        dataField.setText("");
+        valorTotalField.setText("");
+        clienteIdField.setText("");
+
+    } catch (DateTimeParseException ex) {
+        JOptionPane.showMessageDialog(this, "Formato de data inválido. Use o formato: yyyy-MM-dd.");
+    } catch (NumberFormatException ex) {
+        JOptionPane.showMessageDialog(this, "Os campos Valor Total e ID do Cliente devem conter números válidos.");
+    } catch (SQLException ex) {
+        JOptionPane.showMessageDialog(this, "Erro ao adicionar venda: " + ex.getMessage());
+    }
+});
+
         listarButton.addActionListener(e -> {
             try {
+                List<Venda> vendas = controller.listarVendas();
                 StringBuilder lista = new StringBuilder("Vendas cadastradas:\n");
-                for (Venda venda : controller.listarVendas()) {
+                for (Venda venda : vendas) {
                     lista.append("ID: ").append(venda.getId())
                             .append(", Data: ").append(venda.getData())
                             .append(", Valor Total: ").append(venda.getValorTotal())
@@ -316,7 +376,6 @@ public class MainFrame extends JFrame {
             }
         });
 
-        // Atualizar Venda
         atualizarButton.addActionListener(e -> {
             try {
                 String idStr = JOptionPane.showInputDialog(parentFrame, "Digite o ID da venda para atualizar:");
@@ -339,7 +398,6 @@ public class MainFrame extends JFrame {
             }
         });
 
-        // Remover Venda
         removerButton.addActionListener(e -> {
             try {
                 String idStr = JOptionPane.showInputDialog(parentFrame, "Digite o ID da venda para remover:");
@@ -350,8 +408,121 @@ public class MainFrame extends JFrame {
                 JOptionPane.showMessageDialog(parentFrame, "Erro ao remover venda: " + ex.getMessage());
             }
         });
+//================ v01
+        // Painel para exibir e gerenciar produtos associados à venda
+        JPanel produtosPanel = new JPanel(new BorderLayout());
+
+        // Configurando a tabela de produtos
+        String[] colunas = {"ID Produto", "Nome", "Quantidade", "Preço"};
+        tableModel = new DefaultTableModel(colunas, 0);
+        produtosTable = new JTable(tableModel);
+
+        JScrollPane scrollPane = new JScrollPane(produtosTable);
+        produtosPanel.add(scrollPane, BorderLayout.CENTER);
+
+        // Botões para gerenciar produtos na venda
+        JPanel produtosButtonsPanel = new JPanel(new FlowLayout());
+        JButton adicionarProdutoButton = new JButton("Adicionar Produto");
+        JButton removerProdutoButton = new JButton("Remover Produto");
+
+        produtosButtonsPanel.add(adicionarProdutoButton);
+        produtosButtonsPanel.add(removerProdutoButton);
+        produtosPanel.add(produtosButtonsPanel, BorderLayout.SOUTH);
+
+        // Ação para adicionar produto à venda
+       adicionarButton.addActionListener(e -> {
+    try {
+        // Obtenção e validação dos campos
+        String dataTexto = dataField.getText().trim();
+        if (dataTexto.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "O campo de data não pode estar vazio.");
+            return;
+        }
+        LocalDate localDate = LocalDate.parse(dataTexto);
+        Date date = Date.valueOf(localDate);
+
+        String valorTotalTexto = valorTotalField.getText().trim();
+        if (valorTotalTexto.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "O campo de valor total não pode estar vazio.");
+            return;
+        }
+        double valorTotal = Double.parseDouble(valorTotalTexto);
+
+        String clienteIdTexto = clienteIdField.getText().trim();
+        if (clienteIdTexto.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "O campo de ID do cliente não pode estar vazio.");
+            return;
+        }
+        int idCliente = Integer.parseInt(clienteIdTexto);
+
+        // Validação: Verifica se o cliente existe no banco
+        if (!controller.verificarClienteExistente(idCliente)) {
+            JOptionPane.showMessageDialog(this, "O cliente informado não existe. Verifique o ID.");
+            return;
+        }
+
+        // Criação e inserção da venda
+        Venda venda = new Venda(date, valorTotal, idCliente);
+        controller.adicionarVenda(venda);
+
+        JOptionPane.showMessageDialog(this, "Venda adicionada com sucesso!");
+        // Limpeza dos campos
+        dataField.setText("");
+        valorTotalField.setText("");
+        clienteIdField.setText("");
+
+    } catch (DateTimeParseException ex) {
+        JOptionPane.showMessageDialog(this, "Formato de data inválido. Use o formato: yyyy-MM-dd.");
+    } catch (NumberFormatException ex) {
+        JOptionPane.showMessageDialog(this, "Os campos Valor Total e ID do Cliente devem conter números válidos.");
+    } catch (SQLException ex) {
+        JOptionPane.showMessageDialog(this, "Erro ao adicionar venda: " + ex.getMessage());
+    }
+});
+
+
+        // Ação para remover produto da venda
+        removerProdutoButton.addActionListener(e -> {
+    try {
+        String idVendaProdutoStr = JOptionPane.showInputDialog(parentFrame, "Digite o ID do produto na venda:");
+        int idVendaProduto = Integer.parseInt(idVendaProdutoStr);
+
+        vendaProdutoController.removerProdutoDeVenda(idVendaProduto);
+        JOptionPane.showMessageDialog(parentFrame, "Produto removido da venda com sucesso!");
+
+        String idVendaStr = JOptionPane.showInputDialog(parentFrame, "Digite o ID da venda:");
+        int idVenda = Integer.parseInt(idVendaStr);
+        atualizarTabelaProdutos(idVenda);
+    } catch (SQLException ex) {
+        JOptionPane.showMessageDialog(parentFrame, "Erro ao remover produto da venda: " + ex.getMessage());
+    } catch (NumberFormatException ex) {
+        JOptionPane.showMessageDialog(parentFrame, "Por favor, insira valores válidos.");
+    }
+});
+
+        // Adiciona os painéis ao layout principal
+        add(vendaPanel, BorderLayout.NORTH);
+        add(produtosPanel, BorderLayout.CENTER);
+    }
+    private void atualizarTabelaProdutos(int idVenda) {
+    try {
+        List<VendaProduto> produtos = vendaProdutoController.listarProdutosPorVenda(idVenda);
+        tableModel.setRowCount(0); // Limpa os dados existentes na tabela
+        for (VendaProduto produto : produtos) {
+            tableModel.addRow(new Object[]{
+                produto.getIdProduto(),
+                 // Assumindo que o nome está disponível
+                produto.getQuantidade(),
+                produto.getPreco()
+            });
+        }
+    } catch (SQLException ex) {
+        JOptionPane.showMessageDialog(this, "Erro ao atualizar tabela de produtos: " + ex.getMessage());
     }
 }
+
+}
+
 
 class ProdutoAgricolaView {
     private ProdutoAgricolaController controller;

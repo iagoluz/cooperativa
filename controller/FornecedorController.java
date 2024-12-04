@@ -1,7 +1,7 @@
-package controller;
+package cooperativa.controller;
 
-import dao.FornecedorDAO;
-import model.Fornecedor;
+import cooperativa.dao.FornecedorDAO;
+import cooperativa.model.Fornecedor;
 
 import java.sql.SQLException;
 import java.util.List;

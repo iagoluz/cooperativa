@@ -1,7 +1,7 @@
-package controller;
+package cooperativa.controller;
 
-import dao.AgricultorDAO;
-import model.Agricultor;
+import cooperativa.dao.AgricultorDAO;
+import cooperativa.model.Agricultor;
 
 import java.sql.SQLException;
 import java.util.List;

@@ -1,5 +1,5 @@
 
-package model;
+package cooperativa.model;
 
 public class Cliente {
     private int id;

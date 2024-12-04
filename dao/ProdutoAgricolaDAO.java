@@ -1,7 +1,7 @@
-package dao;
+package cooperativa.dao;
 
-import model.ProdutoAgricola;
-import util.ConnectionFactory;
+import cooperativa.model.ProdutoAgricola;
+import cooperativa.util.ConnectionFactory;
 
 import java.sql.*;
 import java.util.ArrayList;

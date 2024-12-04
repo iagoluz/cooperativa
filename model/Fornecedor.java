@@ -1,4 +1,4 @@
-package model;
+package cooperativa.model;
 
 public class Fornecedor {
     private int id;

@@ -1,7 +1,7 @@
-    package dao;
+    package cooperativa.dao;
 
-    import model.Venda;
-    import util.ConnectionFactory;
+    import cooperativa.model.Venda;
+    import cooperativa.util.ConnectionFactory;
 
     import java.sql.*;
     import java.util.ArrayList;
@@ -59,4 +59,18 @@ public void atualizar(Venda venda) throws SQLException {
             }
             return vendas;
         }
+     public boolean verificarClienteExistente(int idCliente) throws SQLException {
+    String sql = "SELECT COUNT(*) FROM cliente WHERE id = ?";
+    try (Connection conn = ConnectionFactory.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setInt(1, idCliente);
+        try (ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1) > 0; // Retorna true se encontrar o cliente
+            }
+        }
+    }
+    return false; // Cliente não encontrado
+}
+   
     }

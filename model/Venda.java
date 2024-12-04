@@ -1,4 +1,4 @@
-package model;
+package cooperativa.model;
 
 import java.util.Date;
 
@@ -18,8 +18,9 @@ public class Venda {
 public Venda(java.util.Date data, double valorTotal, int clienteId) {
     this.data = data;
     this.valorTotal = valorTotal;
-    this.idCliente = idCliente;
+    this.idCliente = clienteId; // Corrigido para usar o parâmetro correto
 }
+
 
     // Getters e Setters
     public int getId() {
